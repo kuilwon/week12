@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Webcam Scroll Effect</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      transition: background-color 0.2s;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+    }
+    #text1 {
+      font-family: 'Helvetica Neue', sans-serif;
+      font-weight: 400;
+      font-size: 14pt;
+      line-height: 20pt;
+      color: black;
+      text-align: left;
+      width: 80vw;
+      margin-top: 20px;
+    }
+    #webcam {
+      display: block;
+      margin: auto;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    #scrollHandle {
+      width: 2vh;
+      height: 2vh;
+      background: black;
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: 50%;
+      transition: background-color 0.2s;
+    }
+    #captureButton {
+      width: 50px;
+      height: 50px;
+      background: radial-gradient(circle, black 50%, white 50%);
+      cursor: pointer;
+      display: block;
+      position: fixed;
+      bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="text1">How much do you understand yourself? How much chaos is going on inside you? Maybe there's constant chaos going on. Scroll through to understand yourself. The confusion of the chaos you feel, stop there. The more calm, the more complicated, the more chaotic. And film it. Compare yourself when there's no chaos in you, and how you are when there's chaos. You understand and grow inside yourself when you record and feel the difference.</div>
+
+  <video id="webcam" autoplay></video>
+
+  <div id="scrollHandle"></div>
+
+  <div id="captureButton"></div>
+
+  <script>
+    // Step 1: Access webcam and apply to video element
+    const webcam = document.getElementById("webcam");
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then((stream) => {
+        webcam.srcObject = stream;
+      })
+      .catch((error) => {
+        console.error("Webcam access denied", error);
+      });
+
+    // Step 2: Add wheel event listener to handle distortion, background, and text color changes
+    let scrollAmount = 0;
+    window.addEventListener("wheel", (e) => {
+      scrollAmount += e.deltaY * 0.01;
+      scrollAmount = Math.max(0, Math.min(scrollAmount, 1));
+
+      // Distortion logic (e.g., applying CSS filters or WebGL shaders)
+      const distortionLevel = scrollAmount * 100;
+      webcam.style.filter = `blur(${distortionLevel * 0.1}px)`;
+
+      // Background color transition (white to black)
+      const colorValue = 255 - Math.round(scrollAmount * 255);
+      document.body.style.backgroundColor = `rgb(${colorValue}, ${colorValue}, ${colorValue})`;
+
+      // Text color inversion logic
+      const textColor = colorValue > 128 ? "black" : "white";
+      document.getElementById("text1").style.color = textColor;
+
+      // Update scroll handle position and color
+      const scrollHandle = document.getElementById("scrollHandle");
+      scrollHandle.style.left = `${Math.min(scrollAmount * 100, 98)}%`;
+      scrollHandle.style.backgroundColor = textColor;
+    });
+
+    // Step 3: Add event listener for capture button to take a snapshot
+    const captureButton = document.getElementById("captureButton");
+    captureButton.addEventListener("click", () => {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      canvas.width = webcam.videoWidth;
+      canvas.height = webcam.videoHeight;
+
+      // Draw the current webcam frame onto the canvas
+      context.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+
+      // Convert canvas to an image (or data URL)
+      const imageDataUrl = canvas.toDataURL("image/png");
+
+      // Placeholder for snapshot handling logic
+      console.log("Snapshot taken", imageDataUrl);
+    });
+  </script>
+</body>
+</html>
